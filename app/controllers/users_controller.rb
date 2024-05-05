@@ -17,7 +17,7 @@ class UsersController < ApplicationController
                      token: jwt_encode(user_id: @user.id),
                      message: 'User created successfully' }, status: :created, location: @user
     else
-      render json: { errors: format_activerecord_errors(current_user.errors) }, status: :unprocessable_entity
+      render json: { errors: format_activerecord_errors(@user.errors) }, status: :unprocessable_entity
     end
   end
 
@@ -40,6 +40,6 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:data).permit(:email, :phone_number, :password, :full_name, :about_as, :address_id)
+    params.require(:data).permit(:email, :phone_number, :password, :full_name, :about_as, :profile_image, address_attributes: [:id, :latitude, :longitude, :address, :_destroy])
   end
 end
