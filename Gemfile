@@ -36,8 +36,13 @@ gem "bootsnap", require: false
 # gem "rack-cors"
 
 group :development, :test do
-  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri mswin mswin64 mingw x64_mingw ]
+  gem "figaro"
+  gem 'byebug'
+end
+
+group :production do
+  gem 'dotenv-rails'
 end
 
 group :development do
@@ -51,7 +56,6 @@ gem 'arctic_admin'
 gem 'sprockets-rails'
 gem 'inherited_resources'
 gem 'active_model_serializers'
-gem 'byebug'
 gem 'sass-rails', '>= 5'
 gem 'jwt'
 gem "bcrypt", "~> 3.1.7"
