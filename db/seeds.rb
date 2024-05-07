@@ -1,1 +1,1 @@
-AdminUser.create(email: "exampl@gmail.com", password: "password")
+AdminUser.create(email: "mytime@gmail.com", password: "Mytime@123")
