@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-ruby "3.0.0"
+ruby "3.1.3"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 7.1.3", ">= 7.1.3.2"
@@ -59,3 +59,4 @@ gem 'active_model_serializers'
 gem 'sass-rails', '>= 5'
 gem 'jwt'
 gem "bcrypt", "~> 3.1.7"
+gem "aws-sdk-s3", require: false
