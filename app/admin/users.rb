@@ -5,7 +5,7 @@ ActiveAdmin.register User do
     f.inputs "User Details" do
       f.input :email
       f.input :phone_number
-      f.input :profile_image, as: :file
+		  f.input :profile_image, as: :file, hint: (f.object.profile_image.attached? ? image_tag(url_for(f.object.profile_image), height: '50') : content_tag(:span, "No Image"))
       f.input :about_us
       f.input :full_name
       f.inputs "Address" do
@@ -24,11 +24,11 @@ ActiveAdmin.register User do
     id_column
     column :email
     column :phone_number
-    column :profile_image do |user|
-      if user.profile_image.attached?
-        image_tag user.profile_image.variant(resize: '100x100')
+    column :profile_image do |logo|
+      if logo.profile_image.attached?
+        image_tag url_for(logo.profile_image), height: '50'
       else
-        "No Image"
+        'No image'
       end
     end
     column :about_us
