@@ -15,4 +15,12 @@ Rails.application.routes.draw do
   post '/reset_password', to:"reset_password#create"
 
   resources :users
+  resources :categories, only: [:index]
+  resources :posts do
+    collection do
+      get :current_user_posts
+    end
+  end
+
+  resources :my_phone_books, only: [:create]
 end
