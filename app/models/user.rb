@@ -7,6 +7,8 @@ class User < ApplicationRecord
   accepts_nested_attributes_for :address, update_only: true
 
   has_many :posts, dependent: :destroy
+  has_many :notifications_created_by, foreign_key: 'created_by', class_name: 'Notification'
+  has_many :notifications_created_for, foreign_key: 'created_for', class_name: 'Notification'
   has_many :my_phone_books
 	
   validates :email, uniqueness: true, presence: true

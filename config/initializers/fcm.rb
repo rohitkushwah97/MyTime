@@ -1,0 +1,4 @@
+FCM_CONFIG = {
+  api_key: 'AAAAm429t1Q:APA91bHeGVxKKt7wlkL63k1wP8sb2apOTnydrPrG-pJuBqCqb4F-jEL2aLE0fnlRzKw0MRnSrGU6nAZN8UO-Bzq6sXso5JR4pCrzF17u8NEuo0vOQqA73_kkqFw3piM-FuOC2kEIXR1v',
+  timeout: 3
+}

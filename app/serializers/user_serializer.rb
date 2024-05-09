@@ -1,5 +1,5 @@
 class UserSerializer < ActiveModel::Serializer
-  attributes :id, :email, :phone_number, :full_name, :about_us, :profile_image, :created_at, :updated_at, :address
+  attributes :id, :email, :phone_number, :full_name, :about_us, :profile_image, :devices, :created_at, :updated_at, :address
 
   def profile_image
     return unless object.profile_image.attached?

@@ -37,9 +37,22 @@ class UsersController < ApplicationController
     end
   end
 
+  def add_devices
+    new_devices = (current_user.devices + user_params[:devices]).uniq
+    current_user.update(devices: new_devices)
+    render json: { message: "New devices added successfully" }, status: :ok
+  end
+
+  def remove_devices
+    remaining_devices = current_user.devices - user_params[:devices]
+    current_user.update(devices: remaining_devices)
+    render json: { message: "Devices removed successfully" }, status: :ok
+  end
+
+
   private
 
   def user_params
-    params.require(:data).permit(:email, :phone_number, :password, :full_name, :about_us, :profile_image, address_attributes: [:id, :latitude, :longitude, :address, :_destroy])
+    params.require(:data).permit(:email, :phone_number, :password, :full_name, :about_us, :profile_image, devices: [], address_attributes: [:id, :latitude, :longitude, :address, :_destroy])
   end
 end

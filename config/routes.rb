@@ -14,7 +14,12 @@ Rails.application.routes.draw do
   # reset_password controller routes for create api
   post '/reset_password', to:"reset_password#create"
 
-  resources :users
+  resources :users do 
+    collection do 
+      patch :add_devices
+      patch :remove_devices
+    end
+  end
   resources :categories, only: [:index]
   resources :posts do
     collection do
@@ -22,5 +27,5 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :my_phone_books, only: [:create]
+  resources :my_phone_books, only: [:create, :index]
 end

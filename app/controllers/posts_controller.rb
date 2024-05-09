@@ -15,6 +15,8 @@ class PostsController < ApplicationController
   end
 
   def show
+    Notification.create(created_by: current_user,created_for: @post&.user,title: "#{current_user.full_name} has viewed your post",body: "Your post titled \"#{@post.caption}\" has been viewed.")
+    @post.update_columns(view_count: @post.view_count.to_i + 1)
     render json: { data: PostSerializer.new(@post) }, status: :ok
   end
 

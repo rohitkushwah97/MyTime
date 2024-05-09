@@ -13,4 +13,10 @@ class MyPhoneBooksController < ApplicationController
       render json: { success: false, message: 'No contact numbers provided' }, status: :unprocessable_entity
     end
   end
+
+  def index
+    contacts = current_user.my_phone_books
+    app_contacts = User.where(phone_number: contacts.pluck(:contact_number))
+    render json: {app_contacts: app_contacts, my_contacts: contacts - app_contacts}
+  end
 end
