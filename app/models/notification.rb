@@ -11,12 +11,12 @@ class Notification < ApplicationRecord
                     title: title,
                     body: body,
                     account_id: created_for,
-                    notifiaction_count: created_for.notifications.where(is_read: false).count
+                    notifiaction_count: created_for.notifications_created_for.where(is_read: false).count
                   },
                   notification: {
                     title: title,
                     body: body,
-                    notifiaction_count: created_for.notifications.where(is_read: false).count,
+                    notifiaction_count: created_for.notifications_created_for.where(is_read: false).count,
                     sound: 'default'
                   } }
       registration_ids = created_for.devices

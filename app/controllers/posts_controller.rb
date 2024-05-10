@@ -15,8 +15,10 @@ class PostsController < ApplicationController
   end
 
   def show
-    Notification.create(created_by: current_user,created_for: @post&.user,title: "#{current_user.full_name} has viewed your post",body: "Your post titled \"#{@post.caption}\" has been viewed.")
-    @post.update_columns(view_count: @post.view_count.to_i + 1)
+    unless current_user.posts.include?(@post)
+      Notification.create(created_by: current_user,created_for: @post&.user,title: "#{current_user.full_name} has viewed your post",body: "Your post titled \"#{@post.caption}\" has been viewed.")
+      @post.update_columns(view_count: @post.view_count.to_i + 1)
+    end
     render json: { data: PostSerializer.new(@post) }, status: :ok
   end
 
@@ -47,7 +49,12 @@ class PostsController < ApplicationController
       render json: { errors: 'Failed to delete post' }, status: :unprocessable_entity
     end
   end
-
+  
+  def search
+    query = params[:data][:query]
+    @posts = Post.search(query)
+    render json: { data: ActiveModelSerializers::SerializableResource.new(@posts, each_serializer: PostSerializer) }, status: :ok
+  end
 
   private
     def set_post

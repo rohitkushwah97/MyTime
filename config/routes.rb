@@ -24,8 +24,11 @@ Rails.application.routes.draw do
   resources :posts do
     collection do
       get :current_user_posts
+      get :search
     end
   end
 
   resources :my_phone_books, only: [:create, :index]
+
+  resources :notifications
 end
