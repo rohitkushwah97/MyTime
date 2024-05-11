@@ -2,11 +2,21 @@ class PostsController < ApplicationController
   before_action :set_post, only: [:show, :update, :destroy]
 
   def index
+    user_address = current_user.address
     posts = Post.where(status: "universal")
     user = User.joins("INNER JOIN my_phone_books ON users.phone_number = my_phone_books.contact_number").where("users.phone_number != ?", current_user.phone_number)
     contacts_posts = user.includes(:posts).where(posts: { status: 'contacts' }).map(&:posts).flatten
-    final_posts = posts + contacts_posts
-    render json: { data: ActiveModelSerializers::SerializableResource.new(final_posts, each_serializer: PostSerializer) }, status: :ok
+    all_posts = posts + contacts_posts
+
+    if user_address.present? && user_address.latitude.present? && user_address.longitude.present?
+      nearby_posts = all_posts.sort_by do |post|
+        post.distance_to_user_address(user_address)
+      end
+      render json: { data: ActiveModelSerializers::SerializableResource.new(nearby_posts, each_serializer: PostSerializer) }, status: :ok
+    else
+      all_posts_sorted = all_posts.sort_by(&:created_at).reverse
+      render json: { data: ActiveModelSerializers::SerializableResource.new(all_posts_sorted, each_serializer: PostSerializer) }, status: :ok
+    end
   end
 
   def current_user_posts
