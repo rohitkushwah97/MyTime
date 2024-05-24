@@ -1,5 +1,5 @@
 class PostSerializer < ActiveModel::Serializer
-  attributes :id, :caption, :status, :category_id, :user_id, :view_count, :images
+  attributes :id, :caption, :status, :category_id, :user, :view_count, :images
 
   def images
     formatted_images = object.images.map do |image|

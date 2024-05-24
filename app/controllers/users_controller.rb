@@ -1,13 +1,17 @@
 class UsersController < ApplicationController
   skip_before_action :authenticate_request, only: %i[create] 
-
+  before_action :get_user, only: [:show]
   def index
     @users = User.all
     render json: @users, each_serializer: UserSerializer
   end
 
   def show
-    render json: { data: UserSerializer.new(current_user) }, status: :ok
+    if @user.present?
+      render json: { data: UserSerializer.new(@user) }, status: :ok
+    else
+      render json: { error: "User not found" }, status: :unprocessable_entity
+    end
   end
 
   def create
@@ -51,6 +55,10 @@ class UsersController < ApplicationController
 
 
   private
+
+  def get_user
+    @user = User.find_by(id: params[:id])
+  end
 
   def user_params
     params.require(:data).permit(:email, :phone_number, :password, :full_name, :about_us, :profile_image, :notification_status, :contact_status, devices: [], address_attributes: [:id, :latitude, :longitude, :address, :_destroy])
