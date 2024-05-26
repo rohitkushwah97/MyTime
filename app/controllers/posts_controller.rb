@@ -27,7 +27,7 @@ class PostsController < ApplicationController
         render json: { contacts_posts: ActiveModelSerializers::SerializableResource.new(contacts_posts, each_serializer: PostSerializer), near_me_public_posts: ActiveModelSerializers::SerializableResource.new(nearby_posts, each_serializer: PostSerializer) }, status: :ok
       else
         all_posts_sorted = all_posts.sort_by(&:created_at).reverse
-        render json: { data: ActiveModelSerializers::SerializableResource.new(all_posts_sorted, each_serializer: PostSerializer) }, status: :ok
+        render json: { contacts_posts: ActiveModelSerializers::SerializableResource.new(contacts_posts&.sort_by(&:created_at)&.reverse, each_serializer: PostSerializer), near_me_public_posts: ActiveModelSerializers::SerializableResource.new(all_posts_sorted, each_serializer: PostSerializer) }, status: :ok
       end
     end
   end
