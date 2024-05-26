@@ -6,16 +6,29 @@ class PostsController < ApplicationController
     posts = Post.where(status: "universal")
     user = User.joins("INNER JOIN my_phone_books ON users.phone_number = my_phone_books.contact_number").where("users.phone_number != ?", current_user.phone_number)
     contacts_posts = user.includes(:posts).where(posts: { status: 'contacts' }).map(&:posts).flatten
-    all_posts = posts + contacts_posts
+    all_posts = posts
 
-    if user_address.present? && user_address.latitude.present? && user_address.longitude.present?
-      nearby_posts = all_posts.sort_by do |post|
-        post.distance_to_user_address(user_address)
+    if params[:category_id].present?
+      category_posts = all_posts.where(category_id: params[:category_id])
+      if user_address.present? && user_address.latitude.present? && user_address.longitude.present?
+        nearby_category_posts = category_posts.sort_by do |post|
+          post.distance_to_user_address(user_address)
+        end
+        render json: { data: ActiveModelSerializers::SerializableResource.new(nearby_category_posts, each_serializer: PostSerializer) }, status: :ok
+      else
+        category_posts_sorted = category_posts.sort_by(&:created_at).reverse
+        render json: { data: ActiveModelSerializers::SerializableResource.new(category_posts_sorted, each_serializer: PostSerializer) }, status: :ok
       end
-      render json: { data: ActiveModelSerializers::SerializableResource.new(nearby_posts, each_serializer: PostSerializer) }, status: :ok
     else
-      all_posts_sorted = all_posts.sort_by(&:created_at).reverse
-      render json: { data: ActiveModelSerializers::SerializableResource.new(all_posts_sorted, each_serializer: PostSerializer) }, status: :ok
+      if user_address.present? && user_address.latitude.present? && user_address.longitude.present?
+        nearby_posts = all_posts.sort_by do |post|
+          post.distance_to_user_address(user_address)
+        end
+        render json: { contacts_posts: ActiveModelSerializers::SerializableResource.new(contacts_posts, each_serializer: PostSerializer), near_me_public_posts: ActiveModelSerializers::SerializableResource.new(nearby_posts, each_serializer: PostSerializer) }, status: :ok
+      else
+        all_posts_sorted = all_posts.sort_by(&:created_at).reverse
+        render json: { data: ActiveModelSerializers::SerializableResource.new(all_posts_sorted, each_serializer: PostSerializer) }, status: :ok
+      end
     end
   end
 
