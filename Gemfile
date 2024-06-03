@@ -62,3 +62,4 @@ gem "bcrypt", "~> 3.1.7"
 gem "aws-sdk-s3", require: false
 gem 'activerecord-import'
 gem 'fcm'
+gem 'geocoder'

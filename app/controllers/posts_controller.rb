@@ -74,7 +74,7 @@ class PostsController < ApplicationController
   end
   
   def search
-    query = params[:data][:query]
+    query = params[:query]
     @posts = Post.search(query)
     render json: { data: ActiveModelSerializers::SerializableResource.new(@posts, each_serializer: PostSerializer) }, status: :ok
   end
@@ -87,7 +87,7 @@ class PostsController < ApplicationController
     end
 
     def post_params
-      params.require(:data).permit(:caption, :status, :category_id, :user_id, images: [])
+      params.require(:data).permit(:caption, :status, :category_id, :user_id, images: [], address_attributes: [:id, :latitude, :longitude, :address, :_destroy])
     end
 end
 

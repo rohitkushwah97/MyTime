@@ -3,7 +3,7 @@ class User < ApplicationRecord
 
   has_one_attached :profile_image
   
-  has_one :address
+  has_one :address, as: :addressable
   accepts_nested_attributes_for :address, update_only: true
 
   has_many :posts, dependent: :destroy
