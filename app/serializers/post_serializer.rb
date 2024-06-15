@@ -17,4 +17,8 @@ class PostSerializer < ActiveModel::Serializer
       address: object.address&.address
     }
   end
+
+  def user
+    User1Serializer.new(object.user)
+  end
 end
