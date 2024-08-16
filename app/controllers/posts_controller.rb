@@ -1,36 +1,92 @@
 class PostsController < ApplicationController
   before_action :set_post, only: [:show, :update, :destroy]
 
-  def index
-    user_address = current_user.address
-    posts = Post.where(status: "universal")
-    user = User.joins("INNER JOIN my_phone_books ON users.phone_number = my_phone_books.contact_number").where("users.phone_number != ?", current_user.phone_number)
-    contacts_posts = user.includes(:posts).where(posts: { status: 'contacts' }).map(&:posts).flatten
-    all_posts = posts
+  # def index
+  #   user_address = current_user.address
+  #   posts = Post.where(status: "universal")
+  #   user = User.joins("INNER JOIN my_phone_books ON users.phone_number = my_phone_books.contact_number").where("users.phone_number != ?", current_user.phone_number)
+  #   contacts_posts = user.includes(:posts).where(posts: { status: 'contacts' }).map(&:posts).flatten
+  #   all_posts = posts
 
-    if params[:category_id].present?
-      category_posts = all_posts.where(category_id: params[:category_id])
-      if user_address.present? && user_address.latitude.present? && user_address.longitude.present?
-        nearby_category_posts = category_posts.sort_by do |post|
-          post.distance_to_user_address(user_address)
-        end
-        render json: { data: ActiveModelSerializers::SerializableResource.new(nearby_category_posts, each_serializer: PostSerializer) }, status: :ok
-      else
-        category_posts_sorted = category_posts.sort_by(&:created_at).reverse
-        render json: { data: ActiveModelSerializers::SerializableResource.new(category_posts_sorted, each_serializer: PostSerializer) }, status: :ok
+  #   if params[:category_id].present?
+  #     category_posts = all_posts.where(category_id: params[:category_id])
+  #     if user_address.present? && user_address.latitude.present? && user_address.longitude.present?
+  #       nearby_category_posts = category_posts.sort_by do |post|
+  #         post.distance_to_user_address(user_address)
+  #       end
+  #       render json: { data: ActiveModelSerializers::SerializableResource.new(nearby_category_posts, each_serializer: PostSerializer) }, status: :ok
+  #     else
+  #       category_posts_sorted = category_posts.sort_by(&:created_at).reverse
+  #       render json: { data: ActiveModelSerializers::SerializableResource.new(category_posts_sorted, each_serializer: PostSerializer) }, status: :ok
+  #     end
+  #   else
+  #     if user_address.present? && user_address.latitude.present? && user_address.longitude.present?
+  #       nearby_posts = all_posts.sort_by do |post|
+  #         post.distance_to_user_address(user_address)
+  #       end
+  #       render json: { contacts_posts: ActiveModelSerializers::SerializableResource.new(contacts_posts, each_serializer: PostSerializer), near_me_public_posts: ActiveModelSerializers::SerializableResource.new(nearby_posts, each_serializer: PostSerializer) }, status: :ok
+  #     else
+  #       all_posts_sorted = all_posts.sort_by(&:created_at).reverse
+  #       render json: { contacts_posts: ActiveModelSerializers::SerializableResource.new(contacts_posts&.sort_by(&:created_at)&.reverse, each_serializer: PostSerializer), near_me_public_posts: ActiveModelSerializers::SerializableResource.new(all_posts_sorted, each_serializer: PostSerializer) }, status: :ok
+  #     end
+  #   end
+  # end
+
+  def index
+  user_address = current_user.address
+  posts = Post.where(status: "universal")
+  user = User.joins("INNER JOIN my_phone_books ON users.phone_number = my_phone_books.contact_number").where("users.phone_number != ?", current_user.phone_number)
+  contacts_posts = user.includes(:posts).where(posts: { status: 'contacts' }).map(&:posts).flatten
+  all_posts = posts
+
+  if params[:category_id].present?
+    category_posts = all_posts.where(category_id: params[:category_id])
+    if user_address.present? && user_address.latitude.present? && user_address.longitude.present?
+      nearby_category_posts = category_posts.sort_by do |post|
+        post.distance_to_user_address(user_address)
       end
+
+      # Create notifications for nearby category posts
+      nearby_category_posts.each do |post|
+        create_notification_for_viewed_post(post)
+      end
+
+      render json: { data: ActiveModelSerializers::SerializableResource.new(nearby_category_posts, each_serializer: PostSerializer) }, status: :ok
     else
-      if user_address.present? && user_address.latitude.present? && user_address.longitude.present?
-        nearby_posts = all_posts.sort_by do |post|
-          post.distance_to_user_address(user_address)
-        end
-        render json: { contacts_posts: ActiveModelSerializers::SerializableResource.new(contacts_posts, each_serializer: PostSerializer), near_me_public_posts: ActiveModelSerializers::SerializableResource.new(nearby_posts, each_serializer: PostSerializer) }, status: :ok
-      else
-        all_posts_sorted = all_posts.sort_by(&:created_at).reverse
-        render json: { contacts_posts: ActiveModelSerializers::SerializableResource.new(contacts_posts&.sort_by(&:created_at)&.reverse, each_serializer: PostSerializer), near_me_public_posts: ActiveModelSerializers::SerializableResource.new(all_posts_sorted, each_serializer: PostSerializer) }, status: :ok
+      category_posts_sorted = category_posts.sort_by(&:created_at).reverse
+
+      # Create notifications for sorted category posts
+      category_posts_sorted.each do |post|
+        create_notification_for_viewed_post(post)
       end
+
+      render json: { data: ActiveModelSerializers::SerializableResource.new(category_posts_sorted, each_serializer: PostSerializer) }, status: :ok
+    end
+  else
+    if user_address.present? && user_address.latitude.present? && user_address.longitude.present?
+      nearby_posts = all_posts.sort_by do |post|
+        post.distance_to_user_address(user_address)
+      end
+
+      # Create notifications for nearby posts
+      nearby_posts.each do |post|
+        create_notification_for_viewed_post(post)
+      end
+
+      render json: { contacts_posts: ActiveModelSerializers::SerializableResource.new(contacts_posts, each_serializer: PostSerializer), near_me_public_posts: ActiveModelSerializers::SerializableResource.new(nearby_posts, each_serializer: PostSerializer) }, status: :ok
+    else
+      all_posts_sorted = all_posts.sort_by(&:created_at).reverse
+
+      # Create notifications for sorted posts
+      all_posts_sorted.each do |post|
+        create_notification_for_viewed_post(post)
+      end
+
+      render json: { contacts_posts: ActiveModelSerializers::SerializableResource.new(contacts_posts&.sort_by(&:created_at)&.reverse, each_serializer: PostSerializer), near_me_public_posts: ActiveModelSerializers::SerializableResource.new(all_posts_sorted, each_serializer: PostSerializer) }, status: :ok
     end
   end
+end
+
 
   def current_user_posts
     posts = current_user.posts
@@ -52,6 +108,7 @@ class PostsController < ApplicationController
 
     if @post.save
       render json: { data: PostSerializer.new(@post), message: 'Post created successfully' }, status: :created
+   
     else
       render json: { errors: @post.errors }, status: :unprocessable_entity
     end
@@ -89,5 +146,18 @@ class PostsController < ApplicationController
     def post_params
       params.require(:data).permit(:caption, :status, :category_id, :user_id, images: [], address_attributes: [:id, :latitude, :longitude, :address, :_destroy])
     end
+
+    def create_notification_for_viewed_post(post)
+  # Check if the current user has already viewed this post
+  unless current_user.posts.include?(post) || Notification.exists?(created_by: current_user, created_for: post.user, title: "#{current_user.full_name} has viewed your post", body: "Your post titled \"#{post.caption}\" has been viewed.")
+    Notification.create(
+      created_by: current_user,
+      created_for: post.user,
+      title: "#{current_user.full_name} has viewed your post",
+      body: "Your post titled \"#{post.caption}\" has been viewed."
+    )
+    post.update_columns(view_count: post.view_count.to_i + 1)
+  end
+end
 end
 
